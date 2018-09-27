@@ -1,10 +1,10 @@
 package eu.jiangwu.moneytransfer.controller
 
-import akka.http.scaladsl.server.Directives._
 import eu.jiangwu.moneytransfer.model.Client
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 class BankServiceTests extends FlatSpec {
   implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
@@ -14,11 +14,20 @@ class BankServiceTests extends FlatSpec {
     bankService.getNumberAccount == 0
   }
 
-  /*"New BankService adding a new account" should "have accountId GB00TEST00000000000001" in {
-    val accountId = onSuccess(bankService.createAccount(new Client("Test3", "Test3"))) {
-      case Some(action) => Some(action.accountId)
-      case _ => None
+  "New BankService adding a new account" should "have accountId GB00TEST00000000000001" in {
+    var res = false
+    bankService.createAccount(new Client("Test3", "Test3")).onComplete {
+      case Success(account) => res = account.map(a => a.accountId).getOrElse("") == "GB00TEST00000000000001"
+      case Failure(_) =>
     }
-    bankService.getNumberAccount == 1 && bankService.
-  }*/
+    res && bankService.getNumberAccount == 1
+  }
+
+  "GB00TEST00000000000001" should "be an accountable id" in {
+    bankService.isAccountableId("GB00TEST00000000000001")
+  }
+
+  "GB00GUEST0000000000001" should "not be an accountable id" in {
+    !bankService.isAccountableId("GB00GUEST0000000000001")
+  }
 }

@@ -5,13 +5,13 @@ import org.scalatest.FlatSpec
 class AccountTest extends FlatSpec {
     val account = new Account("GBTESTTESTTESTTEST", new Client("Test", "Test"))
 
-    "Amount for new account" should "0" in {
+    "Amount for new account" should "have amount 0" in {
       account.getAmount().amount == 0.0
     }
 
     "TransferList for new account" should "return empty with size 0" in {
       val transfers = account.getTransfers().transferList
-      transfers.isEmpty && transfers.size() == 0
+      transfers.isEmpty && transfers.length == 0
     }
 
     "Transfer as sender for new account of amount 100" should "return false, because insufficient funds" in {
@@ -25,6 +25,6 @@ class AccountTest extends FlatSpec {
       //sender: Client, senderAccountId: String, receiver: Client, receiverAccountId: String, amount: Double
       val client2 = new Client("test2" , "test2")
       val transfer = new TransferData(client2, "GBTESTTESTTEST2", account.owner, account.accountId, 100)
-      account.addTransfer(transfer) && account.getAmount().amount == 0 && account.getTransfers().transferList.size() ==1
+      account.addTransfer(transfer) && account.getAmount().amount == 0 && account.getTransfers().transferList.length ==1
     }
 }

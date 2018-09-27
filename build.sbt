@@ -12,7 +12,6 @@ libraryDependencies ++= {
   val AkkaHttpVersion       = "10.1.5"
   val AkkaModuleVersion = "2.5.16"
   val ScalaLoggingVersion = "3.9.0"
-  val Json4sVersion     = "3.6.1"
   val ScalatestVersion  = "3.0.5"
   val Slf4jVersion = "1.7.25"
   val LogBackVersion = "1.2.3"
@@ -27,9 +26,8 @@ libraryDependencies ++= {
     "org.slf4j" % "slf4j-api" % Slf4jVersion % "compile",
     "org.slf4j" % "log4j-over-slf4j" % Slf4jVersion % "compile",
     "ch.qos.logback" % "logback-classic" % LogBackVersion % "compile",
-    "org.json4s"        %% "json4s-native"   % Json4sVersion % "compile",
-    "org.json4s"        %% "json4s-ext"      % Json4sVersion % "compile",
-    "com.google.code.gson" % "gson" % "2.8.5" % "compile",
+    "net.liftweb" %% "lift-json" % "3.3.0" % "compile",
+    "joda-time" % "joda-time" % "2.10" % "compile",
     "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % "test",
     "org.scalatest"     %% "scalatest" % ScalatestVersion % "test",
   )

@@ -21,3 +21,4 @@ object ClientJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val clientFormats = jsonFormat(Client, "firstname", "lastname")
 }
 
+

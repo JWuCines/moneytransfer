@@ -4,20 +4,19 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
-import com.google.gson.{Gson, GsonBuilder}
 import com.typesafe.scalalogging.LazyLogging
 import eu.jiangwu.moneytransfer.controller.BankService
 import eu.jiangwu.moneytransfer.model.{Client, ErrorData, TransferData}
 import org.joda.time.format.DateTimeFormat
 import eu.jiangwu.moneytransfer.model.ClientJsonSupport._
 import eu.jiangwu.moneytransfer.model.TransferDataJsonSupport._
+import scala.concurrent.ExecutionContext.Implicits.global
+import net.liftweb.json.Serialization.write
 
-import scala.concurrent.ExecutionContext
 
 trait BankServiceResource extends LazyLogging with SprayJsonSupport {
-  implicit def executionContext: ExecutionContext
   lazy val bankService = new BankService()
-  val gson: Gson = new GsonBuilder().create();
+  implicit val formats = net.liftweb.json.DefaultFormats
 
   val bankServiceRoutes: Route =
       post {
@@ -27,11 +26,11 @@ trait BankServiceResource extends LazyLogging with SprayJsonSupport {
             onSuccess(bankService.createAccount(account)) {
               case Some(a) => {
                 logger.info(s"createAccount Request accepted: ${a.owner.firstname} ${a.owner.lastname} with id ${a.accountId}")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(a.getAmount()))))
+                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, write(a.getAmount()))))
               }
               case None => {
                 logger.info(s"createAccount Request refused: ${account.firstname} ${account.lastname}")
-                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, gson.toJson(new ErrorData("Error to create account")))))
+                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, write(new ErrorData("Error to create account")))))
               }
             }
           }
@@ -42,15 +41,15 @@ trait BankServiceResource extends LazyLogging with SprayJsonSupport {
             onSuccess(bankService.makeTransfer(transfer)) {
               case Some(t: TransferData) => {
                 logger.info(s"makeTransfer Request ${t.senderAccountId} to ${t.receiverAccountId} with amount ${t.amount} accepted")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(t))))
+                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, write(t))))
               }
               case Some(e: ErrorData) => {
                 logger.info(s"makeTransfer Request ${transfer.senderAccountId} to ${transfer.receiverAccountId} with amount ${transfer.amount} failed: ${e.error}")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(e))))
+                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, write(e))))
               }
               case _ => {
                 logger.info(s"makeTransfer Request ${transfer.senderAccountId} to ${transfer.receiverAccountId} with amount ${transfer.amount} failed: Accounts not managed")
-                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, gson.toJson(new ErrorData("Accounts not managed")))))
+                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, write(new ErrorData("Accounts not managed")))))
               }
             }
           }
@@ -63,11 +62,11 @@ trait BankServiceResource extends LazyLogging with SprayJsonSupport {
             onSuccess(bankService.getAmount(id)) {
               case Some(t) => {
                 logger.info(s"getAmount Request for ${id} accepted: ${t.amount}")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(t))))
+                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`,write(t))))
               }
               case None => {
                 logger.info(s"getAmount Request for ${id} refused: Account not found")
-                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, gson.toJson(new ErrorData("Account not found")))))
+                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`, write(new ErrorData("Account not found")))))
               }
             }
           }
@@ -79,12 +78,12 @@ trait BankServiceResource extends LazyLogging with SprayJsonSupport {
             logger.info(s"getListTransfer Request for ${id}")
             onSuccess(bankService.getListTransfer(id, sDate, eDate)) {
               case Some(t) => {
-                logger.info(s"getListTransfer Request for ${t.accountId} accepted: ${t.transferList.size()} transfer listed")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(t))))
+                logger.info(s"getListTransfer Request for ${t.accountId} accepted: ${t.transferList.length} transfer listed")
+                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, write(t))))
               }
               case None => {
                 logger.info(s"getListTransfer Request for ${id} refused: Account not found")
-                complete((StatusCodes.Created, HttpEntity(ContentTypes.`application/json`, gson.toJson(new ErrorData("Account not found")))))
+                complete((StatusCodes.BadRequest, HttpEntity(ContentTypes.`application/json`,write(new ErrorData("Account not found")))))
               }
             }
           }
